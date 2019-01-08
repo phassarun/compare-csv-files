@@ -38,22 +38,16 @@ def create_folder(name):
     if not os.path.exists(name):
         os.makedirs(name)
     
-def download_csv_files(bucket_name, prefix, list_index, export_folder):
+def download_csv_files(bucket_name, prefix, list_index, export_folder='export'):
+    dir_folder = '{}/{}'.format(export_folder, prefix)
+    create_folder(dir_folder)
+
     for index in list_index:
         source_blob_name = get_blob_name_by_index(bucket_name, prefix, index)
-        print('###### source_blob_name >>>> ', source_blob_name)
+        print('###### source_blob_name\t\t: ', source_blob_name)
         destination_file_name = '{}/{}'.format(export_folder, source_blob_name)
-        print('###### destination_file_name >>>> ', destination_file_name)
+        print('###### destination_file_name\t: ', destination_file_name)
         download_blob(bucket_name, source_blob_name, destination_file_name)
 
-# if __name__ == "__main__":
-#     bucket_name = 'pricetrolley-prod_scraper'
-#     prefix = 'redmart'
-#     list_index = [-1, -2]
-#     export_folder = 'export'
-#     dir_folder = '{}/{}'.format(export_folder, prefix)
-
-#     create_folder(dir_folder)
-#     download_csv_files(bucket_name, prefix, list_index, export_folder)
     
     
