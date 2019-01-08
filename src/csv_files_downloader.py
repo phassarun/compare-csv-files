@@ -1,7 +1,4 @@
-import argparse
-import datetime
 import os
-from pprint import pprint
 
 from google.cloud import storage
 
@@ -42,12 +39,13 @@ def download_csv_files(bucket_name, prefix, list_index, export_folder='export'):
     dir_folder = '{}/{}'.format(export_folder, prefix)
     create_folder(dir_folder)
 
+    path_csv_files = []
     for index in list_index:
         source_blob_name = get_blob_name_by_index(bucket_name, prefix, index)
-        print('###### source_blob_name\t\t: ', source_blob_name)
         destination_file_name = '{}/{}'.format(export_folder, source_blob_name)
+        print('###### source_blob_name\t\t: ', source_blob_name)
         print('###### destination_file_name\t: ', destination_file_name)
         download_blob(bucket_name, source_blob_name, destination_file_name)
-
+        path_csv_files.append(destination_file_name)
     
-    
+    return path_csv_files
