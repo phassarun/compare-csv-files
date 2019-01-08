@@ -1,6 +1,8 @@
 import os
+
 import pandas as pd
 from pandas.util.testing import array_equivalent
+
 
 def compare_csv_files(file_1, file_2):
     columns = ['product_code', 'name', 'regular_price', 'discount']
@@ -27,4 +29,3 @@ def create_csv_from_dataframe(df, path):
     filename = path.split('/')[-1]
     df.to_csv('{}/{}-updated.csv'.format(path, filename))
     print('Create CSV file finished!')
-    
