@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from src.comparison import compare_csv_files, create_csv_from_dataframe
+from src.comparison import compare, create_csv_from_dataframe
 from src.csv_files_downloader import download_csv_files, get_prefix_list
 
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         # path_csv_files 0 is latest, 1 is (latest-1)
         df_current = pd.read_csv(path_csv_files[0])[compare_columns].drop_duplicates(subset='product_code')
         df_past = pd.read_csv(path_csv_files[1])[compare_columns].drop_duplicates(subset='product_code')
-        df_updated = compare_csv_files(df_current, df_past, compare_columns)
+        df_updated = compare(df_current, df_past, compare_columns)
         
         # create updated csv
         path_output_csv = '{}/{}'.format(update_folder, prefix)
