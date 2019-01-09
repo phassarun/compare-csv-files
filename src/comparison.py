@@ -5,7 +5,7 @@ from pandas.util.testing import array_equivalent
 
 
 def compare_csv_files(file_1, file_2):
-    columns = ['product_code', 'name', 'regular_price', 'discount']
+    columns = ['product_code', 'regular_price', 'discount']
     df_current = pd.read_csv(file_1)[columns]
     df_past = pd.read_csv(file_2)[columns]
     df_updated = pd.DataFrame(columns=columns)
@@ -22,10 +22,10 @@ def compare_csv_files(file_1, file_2):
     
     return df_updated
 
-def create_csv_from_dataframe(df, path):
+def create_csv_from_dataframe(df, path, suffix='updated'):
     if not os.path.exists(path):
         os.makedirs(path)
 
     filename = path.split('/')[-1]
-    df.to_csv('{}/{}-updated.csv'.format(path, filename))
+    df.to_csv('{}/{}-{}.csv'.format(path, filename, suffix))
     print('Create CSV file finished!')
