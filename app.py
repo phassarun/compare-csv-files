@@ -33,8 +33,7 @@ if __name__ == "__main__":
     df_summary_report = pd.DataFrame(columns=report_columns)
 
     columns = ['product_code', 'regular_price', 'discount']
-    # prefix_list = get_prefix_list(bucket_name)
-    prefix_list = ['redmart']
+    prefix_list = get_prefix_list(bucket_name)
     for prefix in prefix_list:
         path_csv_files = download_csv_files(bucket_name, prefix, list_index, export_folder)
         # path_csv_files 0 is latest, 1 is (latest-1)
