@@ -32,14 +32,14 @@ if __name__ == "__main__":
     report_columns = ['store_name', 'diff (%)', 'updated', 'original']
     df_summary_report = pd.DataFrame(columns=report_columns)
 
-    columns = ['product_code', 'regular_price', 'discount']
+    compare_columns = ['product_code', 'regular_price', 'discount']
     prefix_list = get_prefix_list(bucket_name)
     for prefix in prefix_list:
         path_csv_files = download_csv_files(bucket_name, prefix, list_index, export_folder)
         # path_csv_files 0 is latest, 1 is (latest-1)
-        df_current = pd.read_csv(path_csv_files[0])[columns].drop_duplicates(subset='product_code')
-        df_past = pd.read_csv(path_csv_files[1])[columns].drop_duplicates(subset='product_code')
-        df_updated = compare_csv_files(df_current, df_past, columns)
+        df_current = pd.read_csv(path_csv_files[0])[compare_columns].drop_duplicates(subset='product_code')
+        df_past = pd.read_csv(path_csv_files[1])[compare_columns].drop_duplicates(subset='product_code')
+        df_updated = compare_csv_files(df_current, df_past, compare_columns)
         
         # create updated csv
         path_output_csv = '{}/{}'.format(update_folder, prefix)
