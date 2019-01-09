@@ -6,16 +6,16 @@ from src.comparison import compare_csv_files, create_csv_from_dataframe
 from src.csv_files_downloader import download_csv_files, get_prefix_list
 
 
-def report(df_1, df_2, store_name):
-    columns = ['product_code']
-    df_1_count = df_1.count()[columns]
-    df_2_count = df_2.count()[columns]
+def report(df_updated, df_current, store_name):
+    selected_columns = ['product_code']
+    df_updated = df_updated.count()[selected_columns]
+    df_current = df_current.count()[selected_columns]
     
     report_columns = ['store_name', 'diff (%)', 'updated', 'original']
     df_report = pd.DataFrame(columns=report_columns)
-    df_report['diff (%)'] = df_2_count/df_1_count*100
-    df_report['updated'] = df_2_count
-    df_report['original'] = df_1_count
+    df_report['diff (%)'] = df_updated / df_current * 100
+    df_report['updated'] = df_updated
+    df_report['original'] = df_current
     df_report['store_name'] = store_name
 
     print(df_report)
@@ -27,16 +27,20 @@ if __name__ == "__main__":
     export_folder = 'export'
     update_folder = 'updated'
     bucket_name = 'pricetrolley-prod_scraper'
+    list_index = [-1, -2] # -1 is current file, -2 is past file
 
-    columns = ['store_name', 'diff (%)', 'updated', 'original']
-    df_output = pd.DataFrame(columns=columns)
+    report_columns = ['store_name', 'diff (%)', 'updated', 'original']
+    df_summary_report = pd.DataFrame(columns=report_columns)
 
-    prefix_list = get_prefix_list(bucket_name)
+    columns = ['product_code', 'regular_price', 'discount']
+    # prefix_list = get_prefix_list(bucket_name)
+    prefix_list = ['redmart']
     for prefix in prefix_list:
-        list_index = [-1, -2] # -1 is current file, -2 is past file
-
         path_csv_files = download_csv_files(bucket_name, prefix, list_index, export_folder)
-        df_updated = compare_csv_files(path_csv_files[0], path_csv_files[1])
+        # path_csv_files 0 is latest, 1 is (latest-1)
+        df_current = pd.read_csv(path_csv_files[0])[columns].drop_duplicates(subset='product_code')
+        df_past = pd.read_csv(path_csv_files[1])[columns].drop_duplicates(subset='product_code')
+        df_updated = compare_csv_files(df_current, df_past, columns)
         
         # create updated csv
         path_output_csv = '{}/{}'.format(update_folder, prefix)
@@ -44,8 +48,7 @@ if __name__ == "__main__":
 
         # create report csv
         print(path_csv_files[0])
-        df_original = pd.read_csv(path_csv_files[0])
-        df_report = report(df_original, df_updated, store_name=prefix)
-        df_output = pd.concat([df_output, df_report])
+        df_report = report(df_updated, df_current, store_name=prefix)
+        df_summary_report = df_summary_report.append(df_report)
 
-    df_output.to_csv('stores-report.csv')
+    df_summary_report.to_csv('stores-report.csv')

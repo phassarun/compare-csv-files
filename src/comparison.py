@@ -4,10 +4,7 @@ import pandas as pd
 from pandas.util.testing import array_equivalent
 
 
-def compare_csv_files(file_1, file_2):
-    columns = ['product_code', 'regular_price', 'discount']
-    df_current = pd.read_csv(file_1)[columns].drop_duplicates(subset='product_code')
-    df_past = pd.read_csv(file_2)[columns].drop_duplicates(subset='product_code')
+def compare_csv_files(df_current, df_past, columns):
     df_updated = pd.DataFrame(columns=columns)
 
     for product_code in df_current['product_code']:
