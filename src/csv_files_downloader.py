@@ -49,3 +49,15 @@ def download_csv_files(bucket_name, prefix, list_index, export_folder='export'):
         path_csv_files.append(destination_file_name)
     
     return path_csv_files
+
+def list_blobs(bucket_name):
+    """Lists all the blobs in the bucket."""
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+
+    blobs = bucket.list_blobs()
+
+    return [blob.name for blob in blobs]
+
+def get_prefix_list(bucket_name):
+    return set(map(lambda blob_name: blob_name.split('/')[0], list_blobs(bucket_name)))
