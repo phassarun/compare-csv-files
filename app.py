@@ -1,53 +1,66 @@
 import os
+from enum import Enum
 
 import pandas as pd
 
-from src.comparison import compare, create_csv_from_dataframe
-from src.csv_files_downloader import download_csv_files, get_prefix_list
+from src.computation import compare, report
+from src.snippets import (download_blob, filter_by_country_code,
+                          get_prefix_list, is_lang, list_blobs_with_prefix)
 
 
-def report(df_updated, df_current, store_name):
-    selected_columns = ['product_code']
-    df_updated = df_updated.count()[selected_columns]
-    df_current = df_current.count()[selected_columns]
-    
-    report_columns = ['store_name', 'diff (%)', 'updated', 'original']
-    df_report = pd.DataFrame(columns=report_columns)
-    df_report['diff (%)'] = df_updated / df_current * 100
-    df_report['updated'] = df_updated
-    df_report['original'] = df_current
-    df_report['store_name'] = store_name
+class Lang(Enum):
+    EN = 'EN'
+    TH = 'TH'
 
-    print(df_report)
-    print('#'*60)
-
-    return df_report
 
 if __name__ == "__main__":
     export_folder = 'export'
     update_folder = 'updated'
+    report_file_name = 'stores-report.csv'
     bucket_name = 'pricetrolley-prod_scraper'
-    list_index = [-1, -2] # -1 is current file, -2 is past file
 
+    compare_columns = ['product_code', 'regular_price', 'discount']
     report_columns = ['store_name', 'diff (%)', 'updated', 'original']
     df_summary_report = pd.DataFrame(columns=report_columns)
 
-    compare_columns = ['product_code', 'regular_price', 'discount']
+    if not os.path.exists(export_folder):
+        os.mkdir(export_folder)
+
     prefix_list = get_prefix_list(bucket_name)
     for prefix in prefix_list:
-        path_csv_files = download_csv_files(bucket_name, prefix, list_index, export_folder)
-        # path_csv_files 0 is latest, 1 is (latest-1)
-        df_current = pd.read_csv(path_csv_files[0])[compare_columns].drop_duplicates(subset='product_code')
-        df_past = pd.read_csv(path_csv_files[1])[compare_columns].drop_duplicates(subset='product_code')
-        df_updated = compare(df_current, df_past, compare_columns)
-        
-        # create updated csv
-        path_output_csv = '{}/{}'.format(update_folder, prefix)
-        create_csv_from_dataframe(df_updated, path_output_csv, suffix='updated')
+        # get list files
+        list_blobs = list_blobs_with_prefix(bucket_name, prefix)
 
-        # create report csv
-        print(path_csv_files[0])
+        lang_en = is_lang(list_blobs, Lang.EN.value)
+        if lang_en:
+            filtered_list_blobs = filter_by_country_code(list_blobs, Lang.EN.value)
+        else:
+            filtered_list_blobs = filter_by_country_code(list_blobs, Lang.TH.value)
+        
+        # download file
+        destination_file_name_current = '{}/{}'.format(export_folder, filtered_list_blobs[-1])
+        destination_file_name_current
+        download_blob(bucket_name, filtered_list_blobs[-1], destination_file_name_current)
+
+        destination_file_name_past = '{}/{}'.format(export_folder, filtered_list_blobs[-2])
+        download_blob(bucket_name, filtered_list_blobs[-2], destination_file_name_past)
+
+        # create DataFrame from csv
+        df_current = pd.read_csv(destination_file_name_current)[compare_columns].drop_duplicates(subset='product_code')
+        df_past = pd.read_csv(destination_file_name_past)[compare_columns].drop_duplicates(subset='product_code')
+        # generate DataFrame has changed
+        df_updated = compare(df_current, df_past, compare_columns)
+
+        # create update csv
+        dir_updated = '{}/{}'.format(update_folder, prefix)
+        if not os.path.exists(dir_updated):
+            os.makedirs(dir_updated)
+        destination_file_name_updated = '{}/{}-{}.csv'.format(dir_updated, prefix, update_folder)
+        df_updated.to_csv(destination_file_name_updated)
+
+        # generate report
         df_report = report(df_updated, df_current, store_name=prefix)
         df_summary_report = df_summary_report.append(df_report)
 
-    df_summary_report.to_csv('stores-report.csv')
+    # create report csv
+    df_summary_report.to_csv(report_file_name)

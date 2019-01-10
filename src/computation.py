@@ -19,10 +19,20 @@ def compare(df_current, df_past, columns):
     
     return df_updated
 
-def create_csv_from_dataframe(df, path, suffix='updated'):
-    if not os.path.exists(path):
-        os.makedirs(path)
+def report(df_updated, df_current, store_name):
+    selected_columns = ['product_code']
+    df_updated = df_updated.count()[selected_columns]
+    df_current = df_current.count()[selected_columns]
+    
+    report_columns = ['store_name', 'diff (%)', 'updated', 'original']
+    df_report = pd.DataFrame(columns=report_columns)
+    df_report['diff (%)'] = df_updated / df_current * 100
+    df_report['updated'] = df_updated
+    df_report['original'] = df_current
+    df_report['store_name'] = store_name
 
-    filename = path.split('/')[-1]
-    df.to_csv('{}/{}-{}.csv'.format(path, filename, suffix))
-    print('Create CSV file finished!')
+    print(df_report)
+    print('#'*60)
+
+    return df_report
+
