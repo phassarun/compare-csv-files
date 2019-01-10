@@ -1,7 +1,6 @@
 import os
 
 from google.cloud import storage
-import re
 
 
 def list_blobs_with_prefix(bucket_name, prefix, delimiter=None):
