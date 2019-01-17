@@ -19,7 +19,29 @@ if __name__ == "__main__":
     report_file_name = 'stores-report.csv'
     bucket_name = 'pricetrolley-prod_scraper'
 
-    compare_columns = ['product_code', 'regular_price', 'discount']
+    compare_columns = [
+        'store_id',
+        'store_name',
+        'store_slug',
+        'store_website',
+        'scrapedAt',
+        'product_code',
+        'name',
+        'url',
+        'image',
+        'regular_price',
+        'discount',
+        'category',
+        'brand',
+        'lang',
+        'sku',
+        'availability',
+        'package_size',
+        'halal',
+        'promotion_quantity',
+        'promotion_price',
+        'description',
+    ]
     report_columns = ['store_name', 'diff (%)', 'updated', 'original']
     df_summary_report = pd.DataFrame(columns=report_columns)
 
@@ -49,7 +71,7 @@ if __name__ == "__main__":
         df_current = pd.read_csv(destination_file_name_current)[compare_columns].drop_duplicates(subset='product_code')
         df_past = pd.read_csv(destination_file_name_past)[compare_columns].drop_duplicates(subset='product_code')
         # generate DataFrame has changed
-        df_updated = compare(df_current, df_past, compare_columns)
+        df_updated, df_diff = compare(df_current, df_past, compare_columns)
 
         # create update csv
         dir_updated = '{}/{}'.format(update_folder, prefix)
@@ -57,6 +79,9 @@ if __name__ == "__main__":
             os.makedirs(dir_updated)
         destination_file_name_updated = '{}/{}-{}.csv'.format(dir_updated, prefix, update_folder)
         df_updated.to_csv(destination_file_name_updated)
+
+        destination_file_name_diff = '{}/{}-{}.csv'.format(dir_updated, prefix, 'diff')
+        df_diff.to_csv(destination_file_name_diff)
 
         # generate report
         df_report = report(df_updated, df_current, store_name=prefix)
