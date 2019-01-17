@@ -29,7 +29,7 @@ def report(df_updated, df_current, store_name):
     df_updated = df_updated.count()[selected_columns]
     df_current = df_current.count()[selected_columns]
     
-    report_columns = ['store_name', 'diff (%)', 'updated', 'original']
+    report_columns = ['store_name', 'diff (%)', 'date', 'updated', 'original']
     df_report = pd.DataFrame(columns=report_columns)
     df_report['diff (%)'] = df_updated / df_current * 100
     df_report['updated'] = df_updated
@@ -40,4 +40,3 @@ def report(df_updated, df_current, store_name):
     print('#'*60)
 
     return df_report
-

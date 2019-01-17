@@ -47,3 +47,6 @@ def is_lang(blobs, country_code):
         if country_code in blob:
             return True
     return False
+
+def filter_by_month_year(blobs, month_year):
+    return list(filter(lambda blob: month_year in blob, blobs))
