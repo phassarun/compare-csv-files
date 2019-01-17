@@ -9,11 +9,31 @@ def compare(df_current, df_past, columns):
     df_diff = df_current.copy()
     df_diff['updated'] = False
 
+    drop_columns = [
+        'store_id',
+        'store_name',
+        'store_slug',
+        'store_website',
+        'scrapedAt',
+        'url',
+        'image',
+        'category',
+        'brand',
+        'lang',
+        'sku',
+        'availability',
+        'package_size',
+        'halal',
+        'promotion_quantity',
+        'promotion_price',
+        'description',
+    ]
+
     for product_code in df_current['product_code']:
         row_current = df_current.loc[df_current['product_code'] == product_code]
         row_past = df_past.loc[df_past['product_code'] == product_code]
 
-        if not array_equivalent(row_current.drop(columns='scrapedAt'), row_past.drop(columns='scrapedAt')):
+        if not array_equivalent(row_current.drop(columns=drop_columns), row_past.drop(columns=drop_columns)):
             df_updated = df_updated.append(row_current)
             print('current\t: ', row_current.values)
             print('past\t\t: ', row_past.values)
